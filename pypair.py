@@ -3,9 +3,9 @@ A tool for pairing players in a swiss event
 '''
 
 #User defined values
-winPoints = 3
+winPoints = 2
 drawPoints = 1
-byePoints = winPoints
+byePoints = 2
 
 #Load our library for building/working with graphs
 import networkx as nx
@@ -131,25 +131,29 @@ class Tournament(object):
                 #Add our player to the correct group
                 pointLists["%s_%s"%(info['Points'], self.countPoints[info['Points']])].append(player)
                 
+            print("pointLists", pointLists)
             #Add all points in use to pointTotals
             for points in pointLists:
                 pointTotals.append(points)
                 
+            print("pointTotals", pointTotals)
+            
             #Sort our point groups based on points
             pointTotals.sort(reverse=True, key=lambda s: int(s.split('_')[0]))
             
-            printdbg( "Point toals after sorting high to low are: %s"%pointTotals, 3 )
+            # printdbg( "Point toals after sorting high to low are: %s"%pointTotals, 3 )
+            print( "Point toals after sorting high to low are: %s"%pointTotals, 3 )
 
             #Actually pair the players utilizing graph theory networkx
             for points in pointTotals:
-                printdbg( points, 5 ) 
+                print( points, 5 ) 
                 
                 #Create the graph object and add all players to it
                 bracketGraph = nx.Graph()
                 bracketGraph.add_nodes_from(pointLists[points])
                 
-                printdbg( pointLists[points], 5 )
-                printdbg( bracketGraph.nodes(), 5 )
+                print( pointLists[points], 5 )
+                print( bracketGraph.nodes(), 5 )
                 
                 #Create edges between all players in the graph who haven't already played
                 for player in bracketGraph.nodes():
@@ -166,14 +170,20 @@ class Tournament(object):
                 #Generate pairings from the created graph
                 pairings = nx.max_weight_matching(bracketGraph)
                 
-                printdbg( pairings, 3 )
+                print( pairings, 3 )
                 
                 #Actually pair the players based on the matching we found
                 for p in pairings:
-                    if p in pointLists[points]:
-                        self.pairPlayers(p, pairings[p])
-                        pointLists[points].remove(p)
-                        pointLists[points].remove(pairings[p])
+                    print('p', p)
+                    # if p in pointLists[points]:
+                    #     self.pairPlayers(p, pairings[p])
+                    #     pointLists[points].remove(p)
+                    #     pointLists[points].remove(pairings[p])
+
+                    if p[0] in pointLists[points]:
+                        self.pairPlayers(p[0], p[1])
+                        pointLists[points].remove(p[0])
+                        pointLists[points].remove(p[1])
                     
                 #Check if we have an odd man out that we need to pair down
                 if len(pointLists[points]) > 0:
